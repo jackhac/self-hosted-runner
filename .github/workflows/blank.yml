@@ -1,0 +1,33 @@
+name: Test Self-Hosted Runner Git Setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-gitconfig:
+    runs-on: self-hosted  # This ensures it runs on your self-hosted runner
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize a fresh Git repository
+        run: |
+          mkdir test-git-repo
+          cd test-git-repo
+          git init
+
+      - name: Verify .git/config exists
+        run: |
+          cd test-git-repo
+          if [ -f ".git/config" ]; then
+            echo ".git/config exists!"
+          else
+            echo "ERROR: .git/config not found!"
+            exit 1
+          fi
+
+      - name: Output contents of .git/config (optional)
+        run: |
+          cd test-git-repo
+          cat .git/config
