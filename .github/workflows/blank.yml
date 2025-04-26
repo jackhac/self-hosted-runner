@@ -1,10 +1,10 @@
-name: Test Self-Hosted Runner Git Setup
+name: Test Self-Hosted Runner Git Setup with GH Token
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-gitconfig:
+  test-gitconfig-gh-token:
     runs-on: self-hosted  # This ensures it runs on your self-hosted runner
 
     steps:
@@ -17,17 +17,24 @@ jobs:
           cd test-git-repo
           git init
 
-      - name: Verify .git/config exists
+      - name: Configure Git to use GH Token for authentication
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd test-git-repo
+          git config --local credential.helper "store"
+          echo "https://${GH_TOKEN}:x-oauth-basic@github.com" > ~/.git-credentials
+          git config --local user.name "github-actions"
+          git config --local user.email "github-actions@github.com"
+          git remote add origin https://github.com/OWNER/REPO.git
+
+      - name: Verify .git/config exists and contains auth info
         run: |
           cd test-git-repo
           if [ -f ".git/config" ]; then
             echo ".git/config exists!"
+            cat .git/config
           else
             echo "ERROR: .git/config not found!"
             exit 1
           fi
-
-      - name: Output contents of .git/config (optional)
-        run: |
-          cd test-git-repo
-          cat .git/config
